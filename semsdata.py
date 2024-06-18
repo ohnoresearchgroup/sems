@@ -3,6 +3,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 
 
 class SEMSdata():
@@ -83,4 +84,81 @@ class SEMSdata():
             plt.title('Num. Conc. vs Diam. of Aerosol Particles of Scan '+ 
                       str(scan+1) +' at Time '+ self.df_proc['StartDateTime'][scan].strftime('%y%m%d %H:%M:%S'))
             plt.show()
+
+    def plotNumConc(self, limits = None):
+        if limits is not None:
+            start = pd.to_datetime(limits[0])
+            end = pd.to_datetime(limits[1])
+            df = self.df_proc.loc[((self.df_proc['StartDateTime'] > start) & (self.df_proc['StartDateTime'] < end))]
+        else:
+            df = self.df_proc
+
+        plt.figure()
+        plt.plot(df['StartDateTime'],df['Total_Num_Conc'])
+        plt.xlabel('Time')
+        plt.ylabel('Num Conc [# cm^-3]')
+
+    def plotMassConc(self, limits = None):
+        if limits is not None:
+            start = pd.to_datetime(limits[0])
+            end = pd.to_datetime(limits[1])
+            df = self.df_proc.loc[((self.df_proc['StartDateTime'] > start) & (self.df_proc['StartDateTime'] < end))]
+        else:
+            df = self.df_proc
+
+        plt.figure()
+        plt.plot(df['StartDateTime'],df['Total_Mass_Conc'])
+        plt.xlabel('Time')
+        plt.ylabel('Mass Conc [ug m^-3]')
+
+
+    def calcNumConcMean(self,limits = None):
+        if limits is not None:
+            start = pd.to_datetime(limits[0])
+            end = pd.to_datetime(limits[1])
+            df = self.df_proc.loc[((self.df_proc['StartDateTime'] > start) & (self.df_proc['StartDateTime'] < end))]
+        else:
+            df = self.df_proc
+            
+        mean = np.round(df['Total_Num_Conc'].mean(),2)
+        std = np.round(df['Total_Num_Conc'].std(),2)
+        print(str(mean) + " +- " +  str(std) + " particles/cc")
+
+    
+    def calcMassConcMean(self, limits = None):
+        if limits is not None:
+            start = pd.to_datetime(limits[0])
+            end = pd.to_datetime(limits[1])
+            df = self.df_proc.loc[((self.df_proc['StartDateTime'] > start) & (self.df_proc['StartDateTime'] < end))]
+        else:
+            df = self.df_proc
+
+        mean = np.round(df['Total_Mass_Conc'].mean(),2)
+        std = np.round(df['Total_Mass_Conc'].std(),2)
+
+        print(str(mean) + " +- " + str(std) + " ug/m^3")
+
+    def createHeatmap(self,limits = None):
+        if limits is not None:
+            start = pd.to_datetime(limits[0])
+            end = pd.to_datetime(limits[1])
+            dfsliced = self.df_proc.loc[((self.df_proc['StartDateTime'] > start) & (self.df_proc['StartDateTime'] < end))]
+        else:
+            dfsliced = self.df_proc
+
+        df = dfsliced['Num_Conc']
+        dfindices = self.df_proc['Diams'][0]
+        df = pd.DataFrame(df.tolist())
+        df.columns = dfindices
+        df['StartDateTime'] = dfsliced['StartDateTime']
+        df = df.set_index('StartDateTime')
+        df_transposed = df.transpose()
+
+        # Create the heatmap
+        #plt.figure(figsize=(10, 8))  # Adjust the figure size
+        plt.figure()  # Adjust the figure size
+        sns.heatmap(df_transposed, cmap='coolwarm')  # Create heatmap with annotations
+        plt.gca().invert_yaxis()
+        plt.title('Heatmap of DataFrame')  # Add title
+        plt.show()  # Display the heatmap
     
