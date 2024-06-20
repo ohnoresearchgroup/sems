@@ -1,5 +1,4 @@
 #works with Brechtel datafiles from SEMS v5.3.0
-
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -150,14 +149,19 @@ class SEMSdata():
         dfindices = self.df_proc['Diams'][0]
         df = pd.DataFrame(df.tolist())
         df.columns = dfindices
-        df['StartDateTime'] = dfsliced['StartDateTime']
+        df['StartDateTime'] = dfsliced['StartDateTime'].reset_index(drop=True)
+        times = df['StartDateTime'].values
         df = df.set_index('StartDateTime')
         df_transposed = df.transpose()
 
         # Create the heatmap
-        #plt.figure(figsize=(10, 8))  # Adjust the figure size
-        plt.figure()  # Adjust the figure size
+        plt.figure()
         sns.heatmap(df_transposed, cmap='coolwarm')  # Create heatmap with annotations
+        ticklabels = [df.index[int(tick)].strftime('%Y-%m-%d %H:%M:%S') for tick in plt.gca().get_xticks()]
+        plt.gca().set_xticklabels(ticklabels);
+        plt.xlabel('Time')
+        plt.ylabel('Diameter [nm]')
+
         plt.gca().invert_yaxis()
         plt.title('Heatmap of DataFrame')  # Add title
         plt.show()  # Display the heatmap
